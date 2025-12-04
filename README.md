@@ -20,6 +20,7 @@ The solution follows the standard RAG pattern, leveraging Knowledge Bases for Am
 
 
 
+
 1 Ingestion: Proprietary documents are loaded into the Knowledge Base.
 
 2 Embedding & Storage: Amazon Bedrock chunks the documents, generates vector embeddings, and stores them in Amazon OpenSearch Serverless (the Vector Store).
@@ -32,14 +33,15 @@ The solution follows the standard RAG pattern, leveraging Knowledge Bases for Am
 
 6 Response: The LLM generates the final answer based only on the provided context, which is then displayed to the user.
 
-⚙️ Services Used
 
+⚙️ Services Used
 Service,Role in Project
 Amazon Bedrock,"Provides access to the LLMs (FM) for generation (e.g., Claude 3 Sonnet)."
 Knowledge Bases for Amazon Bedrock,"Manages the RAG pipeline; handles chunking, embedding, retrieval, and prompt construction."
 Amazon OpenSearch Serverless,Serves as the scalable vector database (Vector Store) for semantic search.
 AWS SDK (Boto3),Used for programmatic interaction with AWS services.
 Streamlit,The Python framework used for creating the frontend chat interface.
+
 
 🛠️ Getting Started
 Prerequisites
@@ -51,6 +53,7 @@ The boto3 and streamlit Python libraries.
 
 
 Installation & Setup
+
 Clone the Repository:
 
 Bash
@@ -64,9 +67,9 @@ Configure AWS Credentials: Ensure your local AWS CLI credentials are set up with
 
 
 Run the Application:
-
 Bash
 streamlit run app.py
+
 📧 Contact
 For questions or feedback, please reach out to Sudarshanam Yessasvini at yessasvini.s@gmail.com.
 

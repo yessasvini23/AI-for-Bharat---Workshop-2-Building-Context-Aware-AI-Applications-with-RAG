@@ -1,75 +1,195 @@
-# [AI for Bharat] Context-Aware RAG Application using Amazon Bedrock
 
-💡 Project Overview
-This project implements a Retrieval-Augmented Generation (RAG) application designed to provide accurate, grounded answers to user questions based only on proprietary or domain-specific documents. It solves the common challenge of LLM hallucinations by linking a powerful Foundation Model (FM) to a trusted knowledge base.
+# 🚀 Context-Aware RAG Application on AWS  
+*A scalable Retrieval-Augmented Generation (RAG) system using Amazon Bedrock, OpenSearch Serverless, S3 & Lambda*
 
-✨ Key Features
-Grounded Responses: Answers are retrieved from a secure knowledge base, ensuring factual accuracy and eliminating common LLM errors.
+---
 
-Semantic Search: Utilizes vector embeddings for semantic search, finding relevant content even when keywords don't match exactly.
+## 📌 Overview  
+This project demonstrates how to build a **context-aware AI assistant** using **Retrieval-Augmented Generation (RAG)** on AWS.  
+The system ingests domain-specific documents, embeds them using **Amazon Bedrock**, stores them in **OpenSearch Serverless**, and provides contextual answers with significantly reduced hallucinations.
 
-AWS Integration: Built entirely using modern serverless and managed services, providing a robust and scalable architecture.
+---
 
-Intuitive Interface: Features a simple web interface built with Streamlit for easy interaction.
+## 🧠 Problem Statement  
+Organizations struggle to use their internal documents effectively. Traditional LLMs cannot answer domain-specific queries accurately.
 
-🏛️ Architecture
-The solution follows the standard RAG pattern, leveraging Knowledge Bases for Amazon Bedrock to orchestrate the entire workflow.
+**Key challenges:**
+- Missing context  
+- Hallucinations  
+- Lack of traceability  
+- Low performance at scale  
 
+---
 
-![Nano-service architecture diagram]("C:\Users\hp\OneDrive\Desktop\licensed-image.jpg")
+## 💡 Solution  
+A **RAG-powered knowledge assistant** that delivers:
+- Context-grounded answers  
+- Semantic search across internal data  
+- Scalable ingestion and retrieval pipeline  
+- Fully serverless deployment on AWS  
 
+---
 
+## 🏗️ Architecture  
 
+![Architecture](./diagrams/architecture.png)
 
-1 Ingestion: Proprietary documents are loaded into the Knowledge Base.
+### 🔧 Components
+| Component | Service |
+|----------|---------|
+| Document storage | Amazon S3 |
+| Embeddings | Amazon Bedrock (Titan Embed / Sonar Embeddings) |
+| Vector Search | OpenSearch Serverless |
+| Ingestion logic | AWS Lambda |
+| Retrieval logic | AWS Lambda |
+| Public interface | Amazon API Gateway |
+| Logging & Monitoring | CloudWatch |
 
-2 Embedding & Storage: Amazon Bedrock chunks the documents, generates vector embeddings, and stores them in Amazon OpenSearch Serverless (the Vector Store).
+---
 
-3 Query: A user submits a query via the Streamlit interface.
+## ⚙️ How It Works
 
-4 Retrieval: The query is routed to the Knowledge Base, which queries the OpenSearch Vector Store to fetch the most relevant text chunks.
+### **1️⃣ Ingestion Pipeline**
+1. Upload a document to **S3**
+2. S3 triggers Lambda (`lambda_ingest.py`)
+3. Lambda:
+   - Cleans text  
+   - Chunks documents  
+   - Generates embeddings using **Bedrock**  
+4. Stores chunks + vectors in **OpenSearch**
 
-5 Generation: The original query and the retrieved context chunks are combined into a prompt and sent to the selected Amazon Bedrock Foundation Model (e.g., Anthropic Claude).
+---
 
-6 Response: The LLM generates the final answer based only on the provided context, which is then displayed to the user.
+### **2️⃣ Retrieval Pipeline**
+1. User sends question via **API Gateway**
+2. Lambda (`lambda_retrieve.py`) generates embedding for query
+3. Performs vector similarity search on OpenSearch
+4. Sends matched context + query to LLM via **Bedrock**
+5. Returns **context-grounded answer**
 
+---
 
-⚙️ Services Used
-Service,Role in Project
-Amazon Bedrock,"Provides access to the LLMs (FM) for generation (e.g., Claude 3 Sonnet)."
-Knowledge Bases for Amazon Bedrock,"Manages the RAG pipeline; handles chunking, embedding, retrieval, and prompt construction."
-Amazon OpenSearch Serverless,Serves as the scalable vector database (Vector Store) for semantic search.
-AWS SDK (Boto3),Used for programmatic interaction with AWS services.
-Streamlit,The Python framework used for creating the frontend chat interface.
+## 📂 Folder Structure  
+(Refer to the project tree above.)
 
+---
 
-🛠️ Getting Started
-Prerequisites
-AWS Account with necessary permissions for Bedrock, OpenSearch, and IAM.
+## 🧩 Code Snippets
 
-Python 3.9+
+### 🟦 Embeddings Example (Bedrock)
 
-The boto3 and streamlit Python libraries.
+```python
+response = bedrock.invoke_model(
+    modelId="amazon.titan-embed-text-v1",
+    body=json.dumps({"inputText": text})
+)
+embedding = json.loads(response["body"].read())["embedding"]
+```
 
+---
 
-Installation & Setup
+### 🟪 OpenSearch Vector Index Creation
 
-Clone the Repository:
+```python
+index_body = {
+  "settings": {"index": {"knn": True}},
+  "mappings": {
+    "properties": {
+      "embedding": {"type": "knn_vector", "dimension": 1536},
+      "text": {"type": "text"}
+    }
+  }
+}
+```
 
-Bash
-git clone [YOUR GITHUB LINK]
-cd [repository-name]
-Install Dependencies:
+---
 
-Bash
+## 🚀 Deployment
+
+### **Option A — CloudFormation**
+```
+cd infrastructure/cloudformation
+aws cloudformation deploy --template-file rag_stack.yaml --stack-name rag-pipeline
+```
+
+### **Option B — Terraform**
+```
+cd infrastructure/terraform
+terraform init
+terraform apply
+```
+
+---
+
+## 📈 Scaling Strategy
+- Lambda Provisioned Concurrency  
+- OpenSearch Serverless scaling policies  
+- S3 multi-region replication  
+- Add caching layer via ElastiCache  
+- Use Kinesis for high-volume document ingestion  
+
+Read more:  
+📄 `docs/scaling_strategy.md`
+
+---
+
+## 🧪 Testing  
+Local tests available under `notebooks/`:
+- **local_ingestion_test.ipynb**
+- **rag_pipeline_demo.ipynb**
+
+To run tests:
+```
 pip install -r requirements.txt
-Configure AWS Credentials: Ensure your local AWS CLI credentials are set up with access to the Bedrock service region.
+pytest
+```
 
+---
 
-Run the Application:
-Bash
-streamlit run app.py
+## 📜 API Usage  
+Full API spec available in:  
+📄 `docs/API_spec.md`
 
-📧 Contact
-For questions or feedback, please reach out to Sudarshanam Yessasvini at yessasvini.s@gmail.com.
+Example request:
+
+```json
+{
+  "query": "What are the advantages of RAG architecture?"
+}
+```
+
+---
+
+## 🔗 Integrations
+- Streamlit UI (optional)  
+- Gradio chatbot interface (optional)  
+- API Gateway REST endpoint  
+
+---
+
+## 🧰 Requirements
+
+```
+python>=3.9
+boto3
+opensearch-py
+langchain
+pydantic
+```
+
+---
+
+## 🤝 Contributing  
+Pull requests are welcome. Please open an issue to discuss significant changes.
+
+---
+
+## 📄 License  
+MIT License
+
+---
+
+## 🌟 Author  
+Built by **Yessasvini Sudarshanam**  
+Part of the **AI for Bharat – Context-Aware RAG Applications Workshop**
 

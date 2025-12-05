@@ -167,6 +167,18 @@ Example request:
 
 ---
 
+🌍 Live Demo Links
+
+🎯 Live App
+🔗 https://udyam-sarthi-aide.lovable.app/
+
+🎥 YouTube Video Demo
+🔗 https://youtu.be/pVg2BOQyG-U
+
+📝 Medium Blog Article
+🔗 https://medium.com/@yessasvinis/the-50-000-chai-problem-how-im-building-india-s-first-compliance-gps-for-small-businesses-a47302a172f5
+
+
 ## 🧰 Requirements
 
 ```
